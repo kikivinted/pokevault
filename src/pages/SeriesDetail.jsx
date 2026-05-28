@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useSets } from '../hooks/usePokemonAPI'
+import { useLang, translateSet, translateEra } from '../context/LanguageContext'
 import PokemonCard from '../components/PokemonCard'
 import { Spinner } from '../components/LoadingGrid'
 import { CardSkeleton } from '../components/LoadingGrid'
@@ -25,6 +26,7 @@ export default function SeriesDetail() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
 
+  const { lang } = useLang()
   const set = sets.find(s => s.id === setId)
 
   useEffect(() => {
@@ -82,10 +84,10 @@ export default function SeriesDetail() {
                 {set.images?.symbol && (
                   <img src={set.images.symbol} alt="" className="h-5 w-auto"/>
                 )}
-                <h1 className="text-2xl font-black">{set.name}</h1>
+                <h1 className="text-2xl font-black">{translateSet(set.name, lang)}</h1>
               </div>
               <p className="text-poke-muted text-sm">
-                {set.series} · {set.total} cartes · {set.releaseDate}
+                {translateEra(set.series, lang)} · {set.total} cartes · {set.releaseDate}
                 {set.ptcgoCode && ` · Code: ${set.ptcgoCode}`}
               </p>
             </div>
