@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-poke-dark text-white font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-poke-card;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-poke-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-poke-muted;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-poke-yellow text-black font-bold rounded-xl hover:bg-yellow-300 transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-poke-border text-white font-semibold rounded-xl hover:border-poke-yellow hover:text-poke-yellow transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-poke-red text-white font-semibold rounded-lg hover:bg-red-700 transition-all duration-200;
+  }
+
+  .card-base {
+    @apply bg-poke-card border border-poke-border rounded-2xl p-4 hover:border-poke-yellow/40 transition-all duration-300;
+  }
+
+  .input-base {
+    @apply w-full bg-poke-card border border-poke-border rounded-xl px-4 py-3 text-white placeholder-poke-muted focus:outline-none focus:border-poke-yellow transition-colors duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .section-title {
+    @apply text-3xl font-black tracking-tight;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-poke-yellow to-yellow-300 bg-clip-text text-transparent;
+  }
+}
+
+/* Card hover effect */
+.pokemon-card-wrap:hover .pokemon-card-inner {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.pokemon-card-inner {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s ease;
+}
+
+/* Particle background */
+.hero-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,222,0,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,76,202,0.08) 0%, transparent 60%),
+    #0a0a0f;
+}
+
+/* Type badges colors */
+.type-fire     { background: rgba(255, 68, 0, 0.2);  color: #ff6633; border-color: rgba(255, 68, 0, 0.4); }
+.type-water    { background: rgba(0, 130, 255, 0.2); color: #4da8ff; border-color: rgba(0, 130, 255, 0.4); }
+.type-grass    { background: rgba(0, 180, 80, 0.2);  color: #4ddb8a; border-color: rgba(0, 180, 80, 0.4); }
+.type-lightning{ background: rgba(255, 210, 0, 0.2); color: #ffd700; border-color: rgba(255, 210, 0, 0.4); }
+.type-psychic  { background: rgba(200, 0, 200, 0.2); color: #d966d6; border-color: rgba(200, 0, 200, 0.4); }
+.type-fighting { background: rgba(180, 80, 0, 0.2);  color: #cc7733; border-color: rgba(180, 80, 0, 0.4); }
+.type-darkness { background: rgba(40, 0, 80, 0.4);   color: #9966cc; border-color: rgba(100, 0, 180, 0.4); }
+.type-metal    { background: rgba(150, 150, 160, 0.2);color: #aaaacc; border-color: rgba(150, 150, 160, 0.4); }
+.type-dragon   { background: rgba(100, 0, 200, 0.2); color: #9966ff; border-color: rgba(100, 0, 200, 0.4); }
+.type-colorless{ background: rgba(180, 180, 180, 0.2);color: #bbbbbb; border-color: rgba(180, 180, 180, 0.4); }
+.type-fairy    { background: rgba(255, 100, 180, 0.2);color: #ff99cc; border-color: rgba(255, 100, 180, 0.4); }
+.type-default  { background: rgba(100, 100, 120, 0.2);color: #aaaaaa; border-color: rgba(100, 100, 120, 0.4); }
+
+/* Rarity colors */
+.rarity-common    { color: #aaaaaa; }
+.rarity-uncommon  { color: #4da8ff; }
+.rarity-rare      { color: #ffd700; }
+.rarity-holo      { color: #ff99cc; }
+.rarity-ultra     { color: #ff6600; }
+.rarity-secret    { color: #cc44ff; }
+.rarity-promo     { color: #00cc88; }
