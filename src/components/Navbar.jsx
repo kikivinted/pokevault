@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useCollection } from '../context/CollectionContext'
-import { useLang } from '../context/LanguageContext'
+import { useLang, useT } from '../context/LanguageContext'
 import SearchOverlay from './SearchOverlay'
 
 export default function Navbar() {
   const { scannedCards } = useCollection()
   const { currentLang } = useLang()
+  const t = useT()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -23,8 +24,7 @@ export default function Navbar() {
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setSearchOpen(true)
+        e.preventDefault(); setSearchOpen(true)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -32,11 +32,11 @@ export default function Navbar() {
   }, [])
 
   const navLinks = [
-    { to: '/', label: 'Accueil' },
-    { to: '/series', label: 'Séries' },
-    { to: '/scan', label: 'Scan' },
-    { to: '/classeur', label: 'Classeur' },
-    { to: '/marche', label: 'Marché' },
+    { to: '/',         label: t('nav_home')   },
+    { to: '/series',   label: t('nav_series') },
+    { to: '/scan',     label: t('nav_scan')   },
+    { to: '/classeur', label: t('nav_binder') },
+    { to: '/marche',   label: t('nav_market') },
   ]
 
   return (
@@ -82,13 +82,13 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Right side */}
+            {/* Right */}
             <div className="flex items-center gap-2">
               {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl border border-poke-border text-poke-muted hover:text-white hover:border-poke-yellow transition-all duration-200"
-                title="Rechercher (⌘K)"
+                title={t('search_btn') + ' (⌘K)'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -96,11 +96,11 @@ export default function Navbar() {
                 <span className="hidden sm:block text-xs">⌘K</span>
               </button>
 
-              {/* Language indicator */}
+              {/* Lang + settings */}
               <Link
                 to="/parametres"
                 className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-poke-border text-poke-muted hover:border-poke-yellow hover:text-white transition-all"
-                title="Paramètres"
+                title={t('nav_settings')}
               >
                 <span className="text-base">{currentLang.flag}</span>
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export default function Navbar() {
                   to="/classeur"
                   className="hidden lg:flex items-center gap-1.5 bg-poke-card border border-poke-border px-3 py-1.5 rounded-lg text-sm hover:border-poke-yellow transition-colors"
                 >
-                  <span className="text-poke-muted text-xs">Classeur</span>
+                  <span className="text-poke-muted text-xs">{t('nav_binder')}</span>
                   <span className="bg-poke-yellow text-black text-xs font-bold px-2 py-0.5 rounded-full">
                     {scannedCards.length}
                   </span>
@@ -160,14 +160,14 @@ export default function Navbar() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                Rechercher
+                {t('search_btn')}
               </button>
               <Link
                 to="/parametres"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5"
               >
-                ⚙️ Paramètres — {currentLang.flag} {currentLang.label}
+                ⚙️ {t('nav_settings')} — {currentLang.flag} {currentLang.label}
               </Link>
             </div>
           )}
