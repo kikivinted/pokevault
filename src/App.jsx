@@ -5,10 +5,12 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Search from './pages/Search'
-import Collection from './pages/Collection'
+import Series from './pages/Series'
+import SeriesDetail from './pages/SeriesDetail'
+import Scan from './pages/Scan'
+import Classeur from './pages/Classeur'
+import Marche from './pages/Marche'
 import CardDetail from './pages/CardDetail'
-import Stats from './pages/Stats'
-import Wishlist from './pages/Wishlist'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -19,11 +21,14 @@ export default function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/recherche" element={<Search />} />
-            <Route path="/collection" element={<Collection />} />
+            <Route path="/series" element={<Series />} />
+            <Route path="/series/:setId" element={<SeriesDetail />} />
+            <Route path="/scan" element={<Scan />} />
+            <Route path="/classeur" element={<Classeur />} />
+            <Route path="/marche" element={<Marche />} />
             <Route path="/carte/:id" element={<CardDetail />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/wishlist" element={<Wishlist />} />
+            {/* kept for search overlay link targets */}
+            <Route path="/recherche" element={<Search />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
