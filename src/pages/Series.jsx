@@ -13,33 +13,82 @@ const ERA_ORDER = [
 ]
 
 const ERA_COLORS = {
-  'Scarlet & Violet':         'from-red-900/25 to-violet-900/25 border-red-700/30',
-  'Sword & Shield':           'from-blue-900/25 to-red-900/25 border-blue-700/30',
-  'Sun & Moon':               'from-orange-900/25 to-blue-900/25 border-orange-700/30',
-  'XY':                       'from-blue-900/25 to-pink-900/25 border-blue-700/30',
-  'Black & White':            'from-gray-800/40 to-gray-900/40 border-gray-600/30',
-  'HeartGold & SoulSilver':   'from-yellow-900/25 to-gray-900/25 border-yellow-700/30',
-  'Platinum':                 'from-slate-800/40 to-blue-900/25 border-slate-600/30',
-  'Diamond & Pearl':          'from-blue-900/25 to-indigo-900/25 border-blue-700/30',
-  'EX':                       'from-purple-900/25 to-blue-900/25 border-purple-700/30',
+  'Scarlet & Violet':       'from-red-900/25 to-violet-900/25 border-red-700/30',
+  'Sword & Shield':         'from-blue-900/25 to-red-900/25 border-blue-700/30',
+  'Sun & Moon':             'from-orange-900/25 to-blue-900/25 border-orange-700/30',
+  'XY':                     'from-blue-900/25 to-pink-900/25 border-blue-700/30',
+  'Black & White':          'from-gray-700/30 to-slate-800/40 border-gray-500/30',
+  'HeartGold & SoulSilver': 'from-yellow-900/25 to-amber-900/30 border-yellow-700/30',
+  'Platinum':               'from-slate-700/35 to-blue-900/30 border-slate-500/30',
+  'Diamond & Pearl':        'from-blue-900/30 to-indigo-900/30 border-indigo-700/30',
+  'EX':                     'from-purple-900/30 to-violet-900/25 border-purple-700/30',
+  'e-Card':                 'from-teal-900/25 to-emerald-900/25 border-teal-700/30',
+  'Neo':                    'from-amber-900/25 to-yellow-900/30 border-amber-700/30',
+  'Gym':                    'from-rose-900/25 to-pink-900/25 border-rose-700/30',
+  'Base':                   'from-red-900/30 to-orange-900/25 border-red-700/30',
+  'Other':                  'from-indigo-900/20 to-slate-800/30 border-indigo-700/20',
 }
 
 function getEraColor(era) {
-  return ERA_COLORS[era] || 'from-poke-card to-poke-dark border-poke-border'
+  return ERA_COLORS[era] || 'from-indigo-900/20 to-slate-800/30 border-indigo-700/20'
+}
+
+function isPromo(set) {
+  const n = (set.name || '').toLowerCase()
+  return n.includes('promo') || n.includes('mcdonald') || n.includes('trainer kit') || n.includes('trainer gallery')
+}
+
+function getLogoUrl(set, lang) {
+  if (lang === 'fr') {
+    return `https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/${set.id}/${set.id}_fr_logo.png`
+  }
+  return set.images?.logo || null
+}
+
+function SetLogo({ set, lang }) {
+  const frUrl = lang === 'fr'
+    ? `https://www.pokemon.com/static-assets/content-assets/cms2/img/cards/web/${set.id}/${set.id}_fr_logo.png`
+    : null
+  const apiUrl = set.images?.logo || null
+
+  if (!frUrl && !apiUrl) {
+    return set.images?.symbol
+      ? <img src={set.images.symbol} alt="" className="h-8 w-8 object-contain"/>
+      : <span className="text-xs font-bold text-center px-1">{translateSet(set.name, lang)}</span>
+  }
+
+  return (
+    <img
+      src={frUrl || apiUrl}
+      alt={set.name}
+      className="max-h-10 max-w-full object-contain"
+      onError={e => {
+        if (frUrl && e.target.src === frUrl && apiUrl) {
+          e.target.src = apiUrl
+        } else if (!apiUrl && set.images?.symbol) {
+          e.target.src = set.images.symbol
+        } else {
+          e.target.style.display = 'none'
+        }
+      }}
+    />
+  )
 }
 
 // ── International (FR / EN) ────────────────────────────────────────────────────
 function InternationalSeries({ lang }) {
   const { sets, loading } = useSets()
   const [openEra, setOpenEra] = useState(null)
+  const [showPromos, setShowPromos] = useState({})
   const t = useT()
 
   const grouped = useMemo(() => {
     const map = {}
     sets.forEach(s => {
       const era = s.series || 'Other'
-      if (!map[era]) map[era] = []
-      map[era].push(s)
+      if (!map[era]) map[era] = { main: [], promos: [] }
+      if (isPromo(s)) map[era].promos.push(s)
+      else map[era].main.push(s)
     })
     const ordered = {}
     ERA_ORDER.forEach(era => { if (map[era]) ordered[era] = map[era] })
@@ -58,10 +107,11 @@ function InternationalSeries({ lang }) {
 
   return (
     <div className="space-y-3">
-      {Object.entries(grouped).map(([era, eraSets]) => {
+      {Object.entries(grouped).map(([era, { main, promos }]) => {
         const isOpen = openEra === era
-        const totalCards = eraSets.reduce((sum, s) => sum + (s.total || 0), 0)
+        const totalCards = [...main, ...promos].reduce((sum, s) => sum + (s.total || 0), 0)
         const eraLabel = translateEra(era, lang)
+        const promoVisible = showPromos[era]
 
         return (
           <div key={era} className={`rounded-2xl border bg-gradient-to-br overflow-hidden transition-all duration-300 ${getEraColor(era)}`}>
@@ -72,12 +122,14 @@ function InternationalSeries({ lang }) {
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg font-black">{eraLabel}</h2>
                 <p className="text-sm text-poke-muted">
-                  {t('sets_count')(eraSets.length)} · {t('cards_count')(totalCards)}
+                  {t('sets_count')(main.length)}
+                  {promos.length > 0 && <span className="opacity-60"> + {promos.length} promos</span>}
+                  {' · '}{t('cards_count')(totalCards)}
                 </p>
               </div>
 
               <div className="hidden sm:flex -space-x-1.5 mr-2">
-                {eraSets.slice(0, 6).map(s =>
+                {main.slice(0, 6).map(s =>
                   s.images?.symbol
                     ? <img key={s.id} src={s.images.symbol} alt="" className="w-5 h-5 object-contain bg-black/20 rounded-full p-0.5"/>
                     : null
@@ -94,31 +146,57 @@ function InternationalSeries({ lang }) {
 
             {isOpen && (
               <div className="border-t border-white/10 p-4 animate-fade-in">
+                {/* Main sets grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                  {eraSets.map(set => (
+                  {main.map(set => (
                     <Link
                       key={set.id}
                       to={`/series/${set.id}`}
                       className="group bg-black/25 hover:bg-black/45 border border-white/10 hover:border-poke-yellow/50 rounded-xl p-3 transition-all duration-200 hover:scale-[1.03] flex flex-col items-center text-center"
                     >
-                      {set.images?.logo ? (
-                        <div className="h-10 flex items-center justify-center mb-2">
-                          <img src={set.images.logo} alt={set.name} className="max-h-10 max-w-full object-contain"/>
-                        </div>
-                      ) : (
-                        <div className="h-10 flex items-center justify-center mb-2">
-                          {set.images?.symbol
-                            ? <img src={set.images.symbol} alt="" className="h-8 w-8 object-contain"/>
-                            : <span className="text-xs font-bold">{set.name}</span>
-                          }
-                        </div>
-                      )}
+                      <div className="h-10 flex items-center justify-center mb-2">
+                        <SetLogo set={set} lang={lang} />
+                      </div>
                       <p className="text-xs font-semibold leading-tight">{translateSet(set.name, lang)}</p>
-                      <p className="text-xs text-poke-muted mt-0.5">{set.total} cartes</p>
-                      {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0,4)}</p>}
+                      <p className="text-xs text-poke-muted mt-0.5">{t('cards_count')(set.total)}</p>
+                      {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0, 4)}</p>}
                     </Link>
                   ))}
                 </div>
+
+                {/* Promos collapsible section */}
+                {promos.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <button
+                      onClick={e => { e.stopPropagation(); setShowPromos(p => ({ ...p, [era]: !p[era] })) }}
+                      className="flex items-center gap-2 text-xs text-poke-muted hover:text-white transition-colors mb-3"
+                    >
+                      <svg className={`w-3.5 h-3.5 transition-transform ${promoVisible ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+                      </svg>
+                      {promos.length} {lang === 'en' ? 'promo & special sets' : lang === 'jp' ? 'プロモセット' : lang === 'zh' ? '促销套装' : 'sets promos & spéciaux'}
+                    </button>
+
+                    {promoVisible && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 animate-fade-in">
+                        {promos.map(set => (
+                          <Link
+                            key={set.id}
+                            to={`/series/${set.id}`}
+                            className="group bg-black/20 hover:bg-black/40 border border-white/5 hover:border-poke-yellow/30 rounded-xl p-3 transition-all duration-200 hover:scale-[1.03] flex flex-col items-center text-center opacity-75 hover:opacity-100"
+                          >
+                            <div className="h-10 flex items-center justify-center mb-2">
+                              <SetLogo set={set} lang={lang} />
+                            </div>
+                            <p className="text-xs font-semibold leading-tight">{translateSet(set.name, lang)}</p>
+                            <p className="text-xs text-poke-muted mt-0.5">{t('cards_count')(set.total)}</p>
+                            {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0, 4)}</p>}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -192,7 +270,6 @@ function JapaneseSeries({ lang }) {
                         onClick={() => handleSetClick(set)}
                         className="group bg-black/25 hover:bg-black/45 border border-white/10 hover:border-poke-yellow/50 rounded-xl p-3 transition-all duration-200 hover:scale-[1.03] flex flex-col items-center text-center"
                       >
-                        {/* Japanese text logo placeholder */}
                         <div className="h-10 flex items-center justify-center mb-2 w-full">
                           <span className="text-xs font-bold text-white/70 leading-tight text-center line-clamp-2 px-1"
                             style={{ fontFamily: '"Noto Sans JP", sans-serif' }}>
@@ -200,9 +277,9 @@ function JapaneseSeries({ lang }) {
                           </span>
                         </div>
                         <p className="text-xs font-semibold leading-tight">{setLabel}</p>
-                        <p className="text-xs text-poke-muted mt-0.5">{set.total} cartes</p>
+                        <p className="text-xs text-poke-muted mt-0.5">{t('cards_count')(set.total)}</p>
                         <div className="flex items-center gap-1 mt-1">
-                          {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0,4)}</p>}
+                          {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0, 4)}</p>}
                           {set.internationalId && <span className="text-xs text-poke-yellow/80">⭐</span>}
                         </div>
                       </button>
@@ -278,8 +355,8 @@ function ChineseSeries({ lang }) {
                           </span>
                         </div>
                         <p className="text-xs font-semibold leading-tight">{setLabel}</p>
-                        <p className="text-xs text-poke-muted mt-0.5">{set.total} cartes</p>
-                        {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0,4)}</p>}
+                        <p className="text-xs text-poke-muted mt-0.5">{t('cards_count')(set.total)}</p>
+                        {set.releaseDate && <p className="text-xs text-poke-muted/60">{set.releaseDate.slice(0, 4)}</p>}
                       </div>
                     )
                   })}
@@ -297,7 +374,6 @@ function ChineseSeries({ lang }) {
 export default function Series() {
   const { lang } = useLang()
   const t = useT()
-  const { sets } = useSets()
   const [activeTab, setActiveTab] = useState('fr')
 
   const TABS = [
